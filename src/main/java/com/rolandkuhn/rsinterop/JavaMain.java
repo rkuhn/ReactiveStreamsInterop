@@ -2,13 +2,17 @@ package com.rolandkuhn.rsinterop;
 
 import org.reactivestreams.Publisher;
 
+
+
 import akka.actor.ActorSystem;
 import akka.stream.FlowMaterializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import ratpack.http.ResponseChunks;
 import ratpack.rx.RxRatpack;
-import ratpack.test.embed.EmbeddedApp;import rx.Observable;
+import ratpack.test.embed.EmbeddedApp;import reactor.rx.Stream;
+import reactor.rx.Streams;
+import rx.Observable;
 import rx.RxReactiveStreams;
 
 
@@ -29,11 +33,13 @@ public class JavaMain {
 			// Reactive Streams Publisher
 			final Publisher<Integer> intPub = RxReactiveStreams.toPublisher(intObs);
 			// Akka Streams Source
-			final Source<String> stringSource = Source.from(intPub).map(i -> i + "\n");
+			final Source<String> stringSource = Source.from(intPub).map(Object::toString);
 			// Reactive Streams Publisher
 			final Publisher<String> stringPub = stringSource.runWith(Sink.<String>fanoutPublisher(1, 1), mat);
+			// Reactor Stream
+			final Stream<String> linesStream = Streams.create(stringPub).map(i -> i + "\n");
 			// and now render the HTTP response
-			ctx.render(ResponseChunks.stringChunks(stringPub));
+			ctx.render(ResponseChunks.stringChunks(linesStream));
 		}).test(client -> {
 			final String text = client.getText();
 			System.out.println(text);

@@ -15,6 +15,7 @@ import akka.stream.FlowMaterializer
 import ratpack.http.ResponseChunks
 import java.util.function.Consumer
 import ratpack.test.http.TestHttpClient
+import reactor.rx.Streams
 
 object ScalaMain extends App {
   val system = ActorSystem("InteropTest")
@@ -29,11 +30,15 @@ object ScalaMain extends App {
       // Reactive Streams Publisher
       val intPub = RxReactiveStreams.toPublisher(intObs)
       // Akka Streams Source
-      val stringSource = Source(intPub).map(_.toString + "\n")
+      val stringSource = Source(intPub).map(_.toString)
       // Reactive Streams Publisher
       val stringPub = stringSource.runWith(Sink.fanoutPublisher(1, 1))
+      // Reactor Stream
+      val linesStream = Streams.create(stringPub).map[String](new reactor.function.Function[String, String] {
+        override def apply(in: String) = in + "\n"
+      })
       // and now render the HTTP response
-      ctx.render(ResponseChunks.stringChunks(stringPub))
+      ctx.render(ResponseChunks.stringChunks(linesStream))
     }
   }).test(new Consumer[TestHttpClient] {
     override def accept(client: TestHttpClient): Unit = {
