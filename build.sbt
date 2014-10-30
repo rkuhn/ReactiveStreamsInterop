@@ -11,7 +11,7 @@ resolvers += "spring" at "http://repo.spring.io/libs-milestone"
 scalaVersion := "2.11.4"
 
 libraryDependencies ++= Seq(
-    "com.typesafe.akka" %% "akka-stream-experimental" % "0.9-SNAPSHOT",
+    "com.typesafe.akka" %% "akka-stream-experimental" % "0.10-M1",
     "io.reactivex" % "rxjava-reactive-streams" % "0.3.0",
     "io.ratpack" % "ratpack-rx" % "0.9.10-SNAPSHOT",
     "io.ratpack" % "ratpack-test" % "0.9.10-SNAPSHOT",
